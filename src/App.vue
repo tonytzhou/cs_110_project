@@ -1,6 +1,5 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
@@ -9,30 +8,15 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/Login">Login</RouterLink>
       </nav>
-    <div class="wrapper">
-
-    </div>
   </header>
 
   <RouterView />
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
 .logo {
   display: block;
   margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
 }
 
 nav a.router-link-exact-active {
@@ -54,11 +38,6 @@ nav a:first-of-type {
 }
 
 @media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
 
   .logo {
     margin: 0 2rem 0 0;
@@ -71,12 +50,10 @@ nav a:first-of-type {
   }
 
   nav {
-    text-align: left;
-    margin-left: -1rem;
+    text-align: center;
     font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
+    margin-top: 3rem;
+    font-size: 1.3rem;
   }
 }
 </style>

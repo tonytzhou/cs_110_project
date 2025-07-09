@@ -17,8 +17,12 @@ defineProps({
 
 <template>
     <div class="center_page">
-     <h1>Hi, user! Welcome to your feed!</h1>
      <div class="wrapper">
+        <div class ="user_post_box">
+            <div class="post_user">Brian Crites</div>
+            <div class="post_content">1st post man!</div>
+            <div class="post_info">Posted on {{ date }}, {{ time }}</div>
+        </div>
         <div class ="user_post_box">
             <div class="post_user">Brian Crites</div>
             <div class="post_content">1st post man!</div>
@@ -33,7 +37,6 @@ h1 {
   font-weight: 500;
   font-size: 2.6rem;
   position: relative;
-  top: -10px;
 }
 
 h3 {
@@ -48,7 +51,8 @@ h3 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min-content, max-content));
     gap: 20px;
-    padding: 20px;
+    padding-right: 10px;
+    padding-left: 10px;
     justify-content: center;
     align-items: start;
     margin: 0 auto;

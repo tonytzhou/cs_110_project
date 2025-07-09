@@ -1,9 +1,24 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+import Feed from '../components/Feed.vue'
+import Login from '../components/Login.vue'
+import Follows from '../components/Follows.vue'
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
+  <main class = "layout">
+    <Login /> 
+    <Feed />
+    <Follows />
   </main>
 </template>
+
+<style scoped>
+.layout {
+  display: flex;
+  flex-direction: row;
+  gap: 5px; 
+  padding: 20px;
+  align-items: flex-start; 
+}
+
+</style>
