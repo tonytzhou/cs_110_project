@@ -52,7 +52,7 @@ nav a:first-of-type {
   nav {
     text-align: center;
     font-size: 1rem;
-    margin-top: 3rem;
+    margin-top: 2rem;
     font-size: 1.3rem;
   }
 }
