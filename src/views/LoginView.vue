@@ -1,15 +1,9 @@
+<script setup>
+import Log_Sign from '../components/Log_Sign.vue'
+</script>
+
 <template>
   <div class="about">
-    <h1>This is the login page</h1>
-  </div>
+    <Log_Sign></Log_Sign>
+    </div>
 </template>
-
-<style scoped>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
-}
-</style>

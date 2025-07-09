@@ -1,35 +1,62 @@
 <script setup>
-defineProps({
-  msg: {
-    type: String,
-    required: true,
+import { ref } from 'vue'
+import { useUserStore } from '../stores/userStores'
+
+const userStore = useUserStore()
+
+const newPost = ref('')
+const posts = ref([
+  {
+    user: 'brrcrites39439@gmail.com',
+    content: '1st post man!',
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString()
   },
-  date: {
-    type: String,
-    default: new Date().toLocaleDateString(),
-  },
-  time: {
-    type: String,
-    default: new Date().toLocaleTimeString(),
+  {
+    user: 'brrcrites39439@gmail.com',
+    content: '1st post man!',
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString()
   }
-})
+])
+
+const submitPost = () => {
+  if (newPost.value.trim() === '') return
+
+  posts.value.unshift({
+    user: userStore.currentUser,
+    content: newPost.value,
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString()
+  })
+
+  newPost.value = ''
+}
 </script>
 
 <template>
-    <div class="center_page">
-     <div class="wrapper">
-        <div class ="user_post_box">
-            <div class="post_user">Brian Crites</div>
-            <div class="post_content">1st post man!</div>
-            <div class="post_info">Posted on {{ date }}, {{ time }}</div>
-        </div>
-        <div class ="user_post_box">
-            <div class="post_user">Brian Crites</div>
-            <div class="post_content">1st post man!</div>
-            <div class="post_info">Posted on {{ date }}, {{ time }}</div>
-        </div>
+  <div class="center_page">
+    <div class="wrapper">
+
+      <div class="new_post_box">
+        <textarea
+          v-model="newPost"
+          placeholder="Post something!"
+        ></textarea>
+        <button @click="submitPost">Post</button>
+      </div>
+
+      <div
+        v-for="(post, index) in posts"
+        :key="index"
+        class="user_post_box"
+      >
+        <div class="post_user">{{ post.user }}</div>
+        <div class="post_content">{{ post.content }}</div>
+        <div class="post_info">Posted on {{ post.date }}, {{ post.time }}</div>
+      </div>
     </div>
-    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -91,6 +118,36 @@ h3 {
 .post_content{
     font-size: 1.2rem;
     color: var(--color-text);
+}
+
+.new_post_box {
+  display: flex;
+  flex-direction: column;
+  width: 800px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  background-color: var(--color-background);
+}
+
+.new_post_box textarea {
+  resize: vertical;
+  min-height: 80px;
+  padding: 10px;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.new_post_box button {
+  align-self: flex-end;
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 </style>
