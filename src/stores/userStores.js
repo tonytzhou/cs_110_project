@@ -7,9 +7,9 @@ export const useUserStore = defineStore('user', {
     isLoggedIn: false,
     mode: 'login',
 
-    followersCount: 0,
-    followingCount: 2,
-    postCount: 3
+    followersCount: 50,
+    followingCount: 5000,
+    postCount: 4
   }),
 
   actions: {
@@ -27,13 +27,9 @@ export const useUserStore = defineStore('user', {
       this.isLoggedIn = false
     },
 
-    incrementFollowing() {
-      this.followingCount += 1
+    setViewingUser(viewUsername) {
+      this.viewingUser = viewUsername
     },
-
-    incrementFollowers() {
-      this.followersCount += 1
-    }
   },
 
   getters: {

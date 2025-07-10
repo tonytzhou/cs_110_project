@@ -38,6 +38,7 @@ const submitPost = () => {
   <div class="center_page">
     <div class="wrapper">
 
+        <template v-if="!userStore.isViewingAnotherUser">
       <div class="new_post_box">
         <textarea
           v-model="newPost"
@@ -45,7 +46,7 @@ const submitPost = () => {
         ></textarea>
         <button @click="submitPost">Post</button>
       </div>
-
+      </template>
       <div v-for="(post, index) in posts":key="index" class="user_post_box">
       <RouterLink class="post_user":to="`/UserProfile/${post.user}`">{{ post.user }} </RouterLink>        
       <div class="post_content">{{ post.content }}</div>

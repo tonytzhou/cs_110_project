@@ -12,12 +12,7 @@ const handleSubmit = () => {
   const passwordValid = userPassword.value.length >= 6
 
   if (!emailValid) {
-    alert('Email must include "@" and ".com".')
-    return
-  }
-
-  if (!passwordValid) {
-    alert('Password must be at least 6 characters long.')
+    alert('Email must include "".com".')
     return
   }
 
@@ -30,12 +25,12 @@ const handleSubmit = () => {
 <template>
   <div class="form-container">
     <form>
+
+      <template v-if="!userStore.isLoggedIn">
       <div class="option">
         <a :class="{ active: userStore.isLogin }" @click.prevent="userStore.toggleMode('login')">Log In</a>
         <a :class="{ active: !userStore.isLogin }" @click.prevent="userStore.toggleMode('signup')">Sign Up</a>
       </div>
-
-      <template v-if="!userStore.isLoggedIn">
         <input type="text" v-model="userEmail" placeholder="Email" />
         <input type="password" v-model="userPassword" placeholder="Password" />
         <button type="button" @click="handleSubmit">

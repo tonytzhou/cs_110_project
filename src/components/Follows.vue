@@ -1,13 +1,14 @@
 <script setup>
 import { useUserStore } from '../stores/userStores'
 
+
 const userStore = useUserStore()
 </script>
 
 <template>
   <div class="right_page" v-if="userStore.isLoggedIn">
     <div class="follows_box">
-      <h1>Who to follow:</h1>
+      <h1><a></a></h1>
       <h2>No one to follow.</h2>
       <h2>Please check back later.</h2>    
     </div>

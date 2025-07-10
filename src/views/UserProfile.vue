@@ -7,14 +7,12 @@ import ViewingUser from '../components/ViewingUser.vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const email = route.params.email
 </script>
 
 <template>
   <main class = "layout">
     <ViewingUser />
     <Feed />
-    <Follows />
   </main>
 </template>
 

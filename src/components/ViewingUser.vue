@@ -1,5 +1,9 @@
 <script setup>
+import { ref } from 'vue'
 import { useUserStore } from '../stores/userStores'
+const user = ref({
+  email: 'brrcrites39439@gmail.com'
+})
 
 const userStore = useUserStore()
 </script>
@@ -8,8 +12,7 @@ const userStore = useUserStore()
   <div class="left_page">
     <div class="login_box">
       <template v-if="userStore.isLoggedIn">
-        
-        <h1>This is {{ userStore.viewingUser }}'s profile!</h1>
+        <h1>This is <div class="h1">{{ user.email }}</div>'s profile!</h1>
         <div class="user_stats">
           <div class="stat">
             <div class="stat_number">{{ userStore.postCount }}</div>
@@ -63,7 +66,7 @@ h1 {
 .user_stats {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  margin-top: 0px;
   padding: 0 10px;
 }
 
@@ -81,5 +84,13 @@ h1 {
 .stat_label {
   font-size: 0.9rem;
   color: gray;
+}
+
+.user_email{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: left;
+    justify-content: left;
 }
 </style>
