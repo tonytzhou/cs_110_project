@@ -46,13 +46,9 @@ const submitPost = () => {
         <button @click="submitPost">Post</button>
       </div>
 
-      <div
-        v-for="(post, index) in posts"
-        :key="index"
-        class="user_post_box"
-      >
-        <div class="post_user">{{ post.user }}</div>
-        <div class="post_content">{{ post.content }}</div>
+      <div v-for="(post, index) in posts":key="index" class="user_post_box">
+      <RouterLink class="post_user":to="`/UserProfile/${post.user}`">{{ post.user }} </RouterLink>        
+      <div class="post_content">{{ post.content }}</div>
         <div class="post_info">Posted on {{ post.date }}, {{ post.time }}</div>
       </div>
     </div>
