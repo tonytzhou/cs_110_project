@@ -8,7 +8,8 @@ const userStore = useUserStore()
   <div class="left_page">
     <div class="login_box">
       <template v-if="userStore.isLoggedIn">
-        <h1>Hello <RouterLink :to="`/UserProfile/${userStore.currentUser}`"> {{ userStore.currentUser }} </RouterLink>!</h1>
+        
+        <h1>This is {{ userStore.viewingUser }}'s profile!</h1>
         <div class="user_stats">
           <div class="stat">
             <div class="stat_number">{{ userStore.postCount }}</div>
@@ -62,7 +63,7 @@ h1 {
 .user_stats {
   display: flex;
   justify-content: space-between;
-  margin-top: 30px;
+  margin-top: 10px;
   padding: 0 10px;
 }
 

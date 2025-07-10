@@ -2,6 +2,7 @@
 import Feed from '../components/Feed.vue'
 import Login from '../components/Login.vue'
 import Follows from '../components/Follows.vue'
+import ViewingUser from '../components/ViewingUser.vue'
 
 import { useRoute } from 'vue-router'
 
@@ -11,8 +12,7 @@ const email = route.params.email
 
 <template>
   <main class = "layout">
-    <Login />
-    
+    <ViewingUser />
     <Feed />
     <Follows />
   </main>
