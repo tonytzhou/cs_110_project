@@ -1,18 +1,13 @@
-<script setup>
-import { ref } from 'vue'
-import { useUserStore } from '../stores/userStores'
-const user = ref({
-  email: 'brrcrites39439@gmail.com'
-})
-
-const userStore = useUserStore()
-</script>
-
 <template>
   <div class="left_page">
     <div class="login_box">
       <template v-if="userStore.isLoggedIn">
-        <h1>This is <div class="h1">{{ user.email }}</div>'s profile!</h1>
+        <h1>
+          This is
+          <span class="h1">{{ userStore.viewingUser }}</span>
+          ’s profile!
+        </h1>
+
         <div class="user_stats">
           <div class="stat">
             <div class="stat_number">{{ userStore.postCount }}</div>
@@ -31,48 +26,77 @@ const userStore = useUserStore()
 
       <template v-else>
         <h1>
-          You are not logged in. <br />
-          To continue, please: <br />
-          <a href="/Login">Login</a> <br />
+          You are not logged in.<br />
+          To continue, please:<br />
+          <RouterLink to="/login">Login</RouterLink>
         </h1>
       </template>
     </div>
   </div>
-</template> 
+</template>
+
+<script setup>
+import { computed, watch } from 'vue'
+import { useRoute }     from 'vue-router'
+import { useUserStore } from '../stores/userStores'
+
+const route = useRoute()
+const userStore = useUserStore()
+
+const viewingEmail = computed(() =>
+  route.params.email || userStore.currentUser
+)
+
+watch(
+  viewingEmail,
+  email => email && userStore.setViewingUser(email),
+  { immediate: true }
+)
+</script>
 
 <style scoped>
-h1 {
-  font-weight: 500;
-  font-size: 1.3rem;
-  position: relative;
-  text-align: center;
-  margin-top: 10px;
-}
-
 .left_page {
   text-align: left;
 }
 
 .login_box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  width: 300px;
+  height: 200px;
+  padding: 1rem;
   border: 3px solid var(--color-border);
   border-radius: 10px;
   background-color: var(--color-background);
-  text-align: left;
-  word-wrap: break-word;
-  width: 300px;
-  height: 200px;
-}   
+}
+
+h1 {
+  font-weight: 500;
+  font-size: 1.3rem;
+  margin: 0.5rem 0;
+}
+
+.h1 {
+  display: block;
+  margin: 0.3rem 0;
+  font-size: 1.4rem;
+  color: var(--color-primary);
+}
 
 .user_stats {
   display: flex;
   justify-content: space-between;
-  margin-top: 0px;
-  padding: 0 10px;
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 .stat {
-  text-align: center;
   flex: 1;
+  text-align: center;
 }
 
 .stat_number {
@@ -84,13 +108,5 @@ h1 {
 .stat_label {
   font-size: 0.9rem;
   color: gray;
-}
-
-.user_email{
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: left;
-    justify-content: left;
 }
 </style>

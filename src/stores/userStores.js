@@ -7,9 +7,9 @@ export const useUserStore = defineStore('user', {
     isLoggedIn: false,
     mode: 'login',
 
-    followersCount: 50,
-    followingCount: 5000,
-    postCount: 4
+    followersCount: 0,
+    followingCount: 0,
+    postCount: 0
   }),
 
   actions: {

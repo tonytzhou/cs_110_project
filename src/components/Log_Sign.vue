@@ -8,18 +8,22 @@ const userEmail = ref('')
 const userPassword = ref('')
 
 const handleSubmit = () => {
-  const emailValid = userEmail.value.includes('@') && userEmail.value.includes('.com')
-  const passwordValid = userPassword.value.length >= 6
-
-  if (!emailValid) {
-    alert('Email must include "".com".')
-    return
-  }
-
   userStore.login(userEmail.value)
   userEmail.value = ''
   userPassword.value = ''
 }
+
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+const auth = getAuth();
+createUserWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+    const user = userCredential.user;
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+  });
 </script>
 
 <template>
@@ -27,10 +31,10 @@ const handleSubmit = () => {
     <form>
 
       <template v-if="!userStore.isLoggedIn">
-      <div class="option">
-        <a :class="{ active: userStore.isLogin }" @click.prevent="userStore.toggleMode('login')">Log In</a>
-        <a :class="{ active: !userStore.isLogin }" @click.prevent="userStore.toggleMode('signup')">Sign Up</a>
-      </div>
+        <div class="option">
+          <a :class="{ active: userStore.isLogin }" @click.prevent="userStore.toggleMode('login')">Log In</a>
+          <a :class="{ active: !userStore.isLogin }" @click.prevent="userStore.toggleMode('signup')">Sign Up</a>
+        </div>
         <input type="text" v-model="userEmail" placeholder="Email" />
         <input type="password" v-model="userPassword" placeholder="Password" />
         <button type="button" @click="handleSubmit">
@@ -45,6 +49,7 @@ const handleSubmit = () => {
     </form>
   </div>
 </template>
+
 <style scoped>
 .form-container {
   border: 3px solid var(--color-border);

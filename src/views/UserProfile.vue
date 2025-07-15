@@ -13,6 +13,7 @@ const route = useRoute()
   <main class = "layout">
     <ViewingUser />
     <Feed />
+    <Follows />
   </main>
 </template>
 

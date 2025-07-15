@@ -1,9 +1,45 @@
+<template>
+  <div class="center_page">
+    <div class="wrapper">
+      <div v-if="userStore.isLoggedIn" class="new_post_box">
+        <textarea
+          v-model="newPost"
+          placeholder="Post something!"
+        ></textarea>
+        <button @click="submitPost">Post</button>
+      </div>
+
+      <div v-else class="login_prompt">
+        <p>Please <RouterLink to="/login">log in</RouterLink> to post.</p>
+      </div>
+
+      <div
+        v-for="(post, index) in posts"
+        :key="index"
+        class="user_post_box"
+      >
+        <RouterLink
+          class="post_user"
+          :to="`/UserProfile/${post.user}`"
+        >
+          {{ post.user }}
+        </RouterLink>
+        <div class="post_content">{{ post.content }}</div>
+        <div class="post_info">
+          Posted on {{ post.date }}, {{ post.time }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref } from 'vue'
 import { useUserStore } from '../stores/userStores'
+import { RouterLink } from 'vue-router'
 
 const userStore = useUserStore()
-
 const newPost = ref('')
 const posts = ref([
   {
@@ -14,15 +50,14 @@ const posts = ref([
   },
   {
     user: 'brrcrites39439@gmail.com',
-    content: '1st post man!',
+    content: 'Another post!',
     date: new Date().toLocaleDateString(),
     time: new Date().toLocaleTimeString()
   }
 ])
 
 const submitPost = () => {
-  if (newPost.value.trim() === '') return
-
+  if (!newPost.value.trim()) return
   posts.value.unshift({
     user: userStore.currentUser,
     content: newPost.value,
@@ -30,91 +65,24 @@ const submitPost = () => {
     time: new Date().toLocaleTimeString()
   })
 
+  userStore.postCount += 1
   newPost.value = ''
 }
 </script>
 
-<template>
-  <div class="center_page">
-    <div class="wrapper">
-
-        <template v-if="!userStore.isViewingAnotherUser">
-      <div class="new_post_box">
-        <textarea
-          v-model="newPost"
-          placeholder="Post something!"
-        ></textarea>
-        <button @click="submitPost">Post</button>
-      </div>
-      </template>
-      <div v-for="(post, index) in posts":key="index" class="user_post_box">
-      <RouterLink class="post_user":to="`/UserProfile/${post.user}`">{{ post.user }} </RouterLink>        
-      <div class="post_content">{{ post.content }}</div>
-        <div class="post_info">Posted on {{ post.date }}, {{ post.time }}</div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <style scoped>
-h1 {
-  font-weight: 500;
-  font-size: 2.6rem;
-  position: relative;
-}
-
-h3 {
-  font-size: 1.2rem;
-}
-
-.center_page{
+.center_page {
   text-align: center;
 }
 
 .wrapper {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min-content, max-content));
-    gap: 20px;
-    padding-right: 10px;
-    padding-left: 10px;
-    justify-content: center;
-    align-items: start;
-    margin: 0 auto;
-}
-
-.user_post_box {
-  position: relative; 
-  border: 3px solid var(--color-border);
-  border-radius: 10px;
-  background-color: var(--color-background);
-  padding: 40px 15px 15px 15px; 
-  text-align: left; 
-  display: block;
-  word-wrap: break-word;
-  width: 800px;
-  max-height: 300px;
-}
-
-
-.post_user {
-  position: absolute;
-  top: 10px;
-  left: 15px;
-  font-weight: bold;
-  font-size: 1.3rem;
-}
-
-.post_info{
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: left;
-    justify-content: left;
-}
-
-.post_content{
-    font-size: 1.2rem;
-    color: var(--color-text);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min-content, max-content));
+  gap: 20px;
+  padding: 0 10px;
+  justify-content: center;
+  align-items: start;
+  margin: 0 auto;
 }
 
 .new_post_box {
@@ -147,4 +115,45 @@ h3 {
   cursor: pointer;
 }
 
+.login_prompt {
+  width: 800px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 2px dashed var(--color-border);
+  border-radius: 10px;
+  background-color: var(--color-background);
+  font-size: 1.1rem;
+}
+
+.user_post_box {
+  position: relative;
+  border: 3px solid var(--color-border);
+  border-radius: 10px;
+  background-color: var(--color-background);
+  padding: 40px 15px 15px;
+  text-align: left;
+  word-wrap: break-word;
+  width: 800px;
+  max-height: 300px;
+}
+
+.post_user {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.post_content {
+  font-size: 1.2rem;
+  color: var(--color-text);
+  margin-top: 10px;
+}
+
+.post_info {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
 </style>
