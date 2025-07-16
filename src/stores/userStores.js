@@ -140,7 +140,7 @@ export const useUserStore = defineStore('user', {
       const snap = await getDocs(q)
       const deletes = snap.docs.map(d =>
         deleteDoc(doc(db, 'follows', d.id))
-      )
+      ) 
       await Promise.all(deletes)
 
       this.followingCount--
