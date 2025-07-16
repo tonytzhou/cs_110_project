@@ -41,7 +41,6 @@ export const useUserStore = defineStore('user', {
       this.mode = newMode
     },
 
-    // on first login, create a user doc if one doesn't exist
     async login(userEmail) {
       if (!userEmail) return
 
@@ -172,9 +171,7 @@ export const useUserStore = defineStore('user', {
       this.isFollowingViewingUser = false
     },
 
-    // ── NEW ACTIONS FOR "Who to Follow" sidebar ──
 
-    // returns an array of emails this.currentUser already follows
     async fetchMyFollowingList() {
       if (!this.currentUser) return []
       const q    = query(followsCollection, where('follower', '==', this.currentUser))
@@ -182,7 +179,6 @@ export const useUserStore = defineStore('user', {
       return snap.docs.map(d => d.data().followed)
     },
 
-    // follow someone by their email
     async followUserByEmail(email) {
       if (!this.currentUser) return
       await addDoc(followsCollection, {
@@ -192,7 +188,6 @@ export const useUserStore = defineStore('user', {
       this.followingCount++
     },
 
-    // unfollow someone by their email
     async unfollowUserByEmail(email) {
       if (!this.currentUser) return
       const q    = query(

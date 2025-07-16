@@ -1,3 +1,10 @@
+<script setup>
+import { useUserStore } from '../stores/userStores'
+import { RouterLink }  from 'vue-router'
+
+const userStore = useUserStore()
+</script>
+
 <template>
   <div class="left_page">
     <div class="login_box">
@@ -36,13 +43,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { useUserStore } from '../stores/userStores'
-import { RouterLink }  from 'vue-router'
-
-const userStore = useUserStore()
-</script>
 
 <style scoped>
 .left_page {
