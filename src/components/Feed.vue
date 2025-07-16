@@ -1,16 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '../stores/userStores'
-import { RouterLink } from 'vue-router'
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy,
-  serverTimestamp
-} from 'firebase/firestore'
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore'
 import { getApp } from 'firebase/app'
 
 const app = getApp()
@@ -24,9 +15,10 @@ const posts = ref([])
 onMounted(() => {
   const postsQuery = query(postsCollection, orderBy('timestamp', 'desc'))
   onSnapshot(postsQuery, snapshot => {
-    posts.value = snapshot.docs
-      .filter(doc => doc.data().user !== userStore.currentUser)
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+    const allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    posts.value = userStore.viewingUser
+      ? allPosts.filter(post => post.user === userStore.viewingUser)
+      : allPosts.filter(post => post.user !== userStore.currentUser)
   })
 })
 
