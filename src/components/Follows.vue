@@ -2,21 +2,41 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore }  from '../stores/userStores'
 import { RouterLink }    from 'vue-router'
+import { getFirestore, collection, getDocs } from 'firebase/firestore'
+import { getApp } from 'firebase/app'
+
+const app = getApp()
+const db = getFirestore(app)
+const usersC = collection(db, 'users')
 
 const userStore = useUserStore()
 const suggestions = ref([])
 
 onMounted(async () => {
-  const all = await fetchRandomUsers()
-  suggestions.value = all
-    .filter(u => u.email !== userStore.currentUser)
-    .slice(0, 3)
-    .map(u => ({ ...u, isFollowing: false }))
+  if (!userStore.isLoggedIn) return
+
+  const following = await userStore.fetchMyFollowingList()
+
+  const snap  = await getDocs(usersC)
+  const users = snap.docs.map(d => d.data())
+
+  suggestions.value = users
+    .filter(u =>
+      u.email !== userStore.currentUser &&
+      !following.includes(u.email)
+    )
+    .slice(0, 5)
+    .map(u => ({ email: u.email, isFollowing: false }))
 })
 
-function toggleFollow(u) {
-  u.isFollowing = !u.isFollowing
-  userStore.followingCount += u.isFollowing ? 1 : -1
+async function toggleFollow(u) {
+  if (u.isFollowing) {
+    await userStore.unfollowUserByEmail(u.email)
+    u.isFollowing = false
+  } else {
+    await userStore.followUserByEmail(u.email)
+    u.isFollowing = true
+  }
 }
 </script>
 
@@ -44,19 +64,16 @@ function toggleFollow(u) {
           </div>
         </div>
         <div v-else>
-          <h2>No one to follow right now.</h2>
-          <h2>Please check back later.</h2>
+          <h2>No one new to follow right now.</h2>
         </div>
       </template>
-
       <template v-else>
-        <h1>Who to follow:</h1>
-        <h2>You are not logged in.</h2>
-        <h2>Please log in to see suggestions.</h2>
+        <h1>Please log in to see suggestions.</h1>
       </template>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .right_page {

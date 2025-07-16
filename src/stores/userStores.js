@@ -14,10 +14,9 @@ import { getApp } from 'firebase/app'
 const app = getApp()
 const db = getFirestore(app)
 
-const postsCollection = collection(db, 'posts')
+const postsCollection   = collection(db, 'posts')
 const followsCollection = collection(db, 'follows')
-
-const usersCollection = collection(db, 'users')
+const usersCollection   = collection(db, 'users')
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -42,19 +41,20 @@ export const useUserStore = defineStore('user', {
       this.mode = newMode
     },
 
+    // on first login, create a user doc if one doesn't exist
     async login(userEmail) {
       if (!userEmail) return
 
-      const userQuery = query(usersCollection, where('email','==', userEmail))
-      const userSnap  = await getDocs(userQuery)
+      const userQ   = query(usersCollection, where('email', '==', userEmail))
+      const userSnap = await getDocs(userQ)
 
       if (userSnap.empty) {
         await addDoc(usersCollection, {
-          email: userEmail,
-          feed: [],
+          email:     userEmail,
+          feed:      [],
           followers: [],
           following: [],
-          posts: []
+          posts:     []
         })
       }
 
@@ -69,11 +69,11 @@ export const useUserStore = defineStore('user', {
     },
 
     logout() {
-      this.currentUser = ''
-      this.isLoggedIn = false
-      this.postCount = 0
-      this.followersCount = 0
-      this.followingCount = 0
+      this.currentUser      = ''
+      this.isLoggedIn       = false
+      this.postCount        = 0
+      this.followersCount   = 0
+      this.followingCount   = 0
     },
 
     async setViewingUser(viewUsername) {
@@ -88,39 +88,42 @@ export const useUserStore = defineStore('user', {
 
     async fetchMyPostCount() {
       if (!this.currentUser) return
-      const q = query(postsCollection, where('user','==',this.currentUser))
+      const q    = query(postsCollection, where('user', '==', this.currentUser))
       const snap = await getDocs(q)
       this.postCount = snap.size
     },
+
     async fetchViewingPostCount() {
       if (!this.viewingUser) return
-      const q = query(postsCollection, where('user','==',this.viewingUser))
+      const q    = query(postsCollection, where('user', '==', this.viewingUser))
       const snap = await getDocs(q)
       this.viewingPostCount = snap.size
     },
 
     async fetchMyFollowersCount() {
       if (!this.currentUser) return
-      const q = query(followsCollection, where('followed','==',this.currentUser))
+      const q    = query(followsCollection, where('followed', '==', this.currentUser))
       const snap = await getDocs(q)
       this.followersCount = snap.size
     },
+
     async fetchViewingFollowersCount() {
       if (!this.viewingUser) return
-      const q = query(followsCollection, where('followed','==',this.viewingUser))
+      const q    = query(followsCollection, where('followed', '==', this.viewingUser))
       const snap = await getDocs(q)
       this.viewingFollowersCount = snap.size
     },
 
     async fetchMyFollowingCount() {
       if (!this.currentUser) return
-      const q = query(followsCollection, where('follower','==',this.currentUser))
+      const q    = query(followsCollection, where('follower', '==', this.currentUser))
       const snap = await getDocs(q)
       this.followingCount = snap.size
     },
+
     async fetchViewingFollowingCount() {
       if (!this.viewingUser) return
-      const q = query(followsCollection, where('follower','==',this.viewingUser))
+      const q    = query(followsCollection, where('follower', '==', this.viewingUser))
       const snap = await getDocs(q)
       this.viewingFollowingCount = snap.size
     },
@@ -130,10 +133,10 @@ export const useUserStore = defineStore('user', {
         this.isFollowingViewingUser = false
         return
       }
-      const q = query(
+      const q    = query(
         followsCollection,
-        where('follower','==', this.currentUser),
-        where('followed','==', this.viewingUser)
+        where('follower', '==', this.currentUser),
+        where('followed', '==', this.viewingUser)
       )
       const snap = await getDocs(q)
       this.isFollowingViewingUser = snap.size > 0
@@ -149,13 +152,14 @@ export const useUserStore = defineStore('user', {
       this.viewingFollowersCount++
       this.isFollowingViewingUser = true
     },
+
     async unfollowUser() {
       if (!this.currentUser || !this.viewingUser) return
 
-      const q = query(
+      const q    = query(
         followsCollection,
-        where('follower','==', this.currentUser),
-        where('followed','==', this.viewingUser)
+        where('follower', '==', this.currentUser),
+        where('followed', '==', this.viewingUser)
       )
       const snap = await getDocs(q)
       const deletes = snap.docs.map(d =>
@@ -166,11 +170,47 @@ export const useUserStore = defineStore('user', {
       this.followingCount--
       this.viewingFollowersCount--
       this.isFollowingViewingUser = false
+    },
+
+    // ── NEW ACTIONS FOR "Who to Follow" sidebar ──
+
+    // returns an array of emails this.currentUser already follows
+    async fetchMyFollowingList() {
+      if (!this.currentUser) return []
+      const q    = query(followsCollection, where('follower', '==', this.currentUser))
+      const snap = await getDocs(q)
+      return snap.docs.map(d => d.data().followed)
+    },
+
+    // follow someone by their email
+    async followUserByEmail(email) {
+      if (!this.currentUser) return
+      await addDoc(followsCollection, {
+        follower: this.currentUser,
+        followed: email
+      })
+      this.followingCount++
+    },
+
+    // unfollow someone by their email
+    async unfollowUserByEmail(email) {
+      if (!this.currentUser) return
+      const q    = query(
+        followsCollection,
+        where('follower', '==', this.currentUser),
+        where('followed', '==', email)
+      )
+      const snap = await getDocs(q)
+      const deletes = snap.docs.map(d =>
+        deleteDoc(doc(db, 'follows', d.id))
+      )
+      await Promise.all(deletes)
+      this.followingCount--
     }
   },
 
   getters: {
-    isLogin: s => s.mode === 'login',
+    isLogin:          s => s.mode === 'login',
     isViewingAnother: s => !!s.viewingUser
   }
-})  
+})
