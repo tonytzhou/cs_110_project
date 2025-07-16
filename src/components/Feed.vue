@@ -2,7 +2,15 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '../stores/userStores'
 import { RouterLink } from 'vue-router'
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore'
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp
+} from 'firebase/firestore'
 import { getApp } from 'firebase/app'
 
 const app = getApp()
@@ -16,7 +24,9 @@ const posts = ref([])
 onMounted(() => {
   const postsQuery = query(postsCollection, orderBy('timestamp', 'desc'))
   onSnapshot(postsQuery, snapshot => {
-    posts.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    posts.value = snapshot.docs
+      .filter(doc => doc.data().user !== userStore.currentUser)
+      .map(doc => ({ id: doc.id, ...doc.data() }))
   })
 })
 
@@ -49,7 +59,7 @@ const submitPost = async () => {
         <p>Please <RouterLink to="/login">log in</RouterLink> to post.</p>
       </div>
 
-      <div v-for="(post, index) in posts" :key="post.id" class="user_post_box">
+      <div v-for="post in posts" :key="post.id" class="user_post_box">
         <RouterLink class="post_user" :to="`/UserProfile/${post.user}`">
           {{ post.user }}
         </RouterLink>
@@ -58,7 +68,6 @@ const submitPost = async () => {
           Posted on {{ post.date }}, {{ post.time }}
         </div>
       </div>
-
     </div>
   </div>
 </template>

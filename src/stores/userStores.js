@@ -13,8 +13,11 @@ import { getApp } from 'firebase/app'
 
 const app = getApp()
 const db = getFirestore(app)
+
 const postsCollection = collection(db, 'posts')
 const followsCollection = collection(db, 'follows')
+
+const usersCollection = collection(db, 'users')
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -40,18 +43,35 @@ export const useUserStore = defineStore('user', {
     },
 
     async login(userEmail) {
+      if (!userEmail) return
+
+      const userQuery = query(usersCollection, where('email','==', userEmail))
+      const userSnap  = await getDocs(userQuery)
+
+      if (userSnap.empty) {
+        await addDoc(usersCollection, {
+          email: userEmail,
+          feed: [],
+          followers: [],
+          following: [],
+          posts: []
+        })
+      }
+
       this.currentUser = userEmail
       this.isLoggedIn  = true
+
       await Promise.all([
         this.fetchMyPostCount(),
         this.fetchMyFollowersCount(),
         this.fetchMyFollowingCount()
       ])
     },
+
     logout() {
       this.currentUser = ''
-      this.isLoggedIn  = false
-      this.postCount   = 0
+      this.isLoggedIn = false
+      this.postCount = 0
       this.followersCount = 0
       this.followingCount = 0
     },
@@ -110,7 +130,7 @@ export const useUserStore = defineStore('user', {
         this.isFollowingViewingUser = false
         return
       }
-      const q    = query(
+      const q = query(
         followsCollection,
         where('follower','==', this.currentUser),
         where('followed','==', this.viewingUser)
@@ -131,7 +151,7 @@ export const useUserStore = defineStore('user', {
     },
     async unfollowUser() {
       if (!this.currentUser || !this.viewingUser) return
-      
+
       const q = query(
         followsCollection,
         where('follower','==', this.currentUser),
@@ -140,7 +160,7 @@ export const useUserStore = defineStore('user', {
       const snap = await getDocs(q)
       const deletes = snap.docs.map(d =>
         deleteDoc(doc(db, 'follows', d.id))
-      ) 
+      )
       await Promise.all(deletes)
 
       this.followingCount--
@@ -150,7 +170,7 @@ export const useUserStore = defineStore('user', {
   },
 
   getters: {
-    isLogin: (s) => s.mode === 'login',
-    isViewingAnother: (s) => !!s.viewingUser
+    isLogin: s => s.mode === 'login',
+    isViewingAnother: s => !!s.viewingUser
   }
-})
+})  
