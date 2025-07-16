@@ -20,8 +20,8 @@ const register = async () => {
   try {
     const { user } = await createUserWithEmailAndPassword(auth, email.value, password.value)
     userStore.login(user.email ?? user.uid)
-    errMsg.value   = ''
-    email.value    = ''
+    errMsg.value = ''
+    email.value = ''
     password.value = ''
     router.push('/')
   } catch (e) {
@@ -33,8 +33,8 @@ const login = async () => {
   try {
     const { user } = await signInWithEmailAndPassword(auth, email.value, password.value)
     userStore.login(user.email ?? user.uid)
-    errMsg.value   = ''
-    email.value    = ''
+    errMsg.value = ''
+    email.value = ''
     password.value = ''
     router.push('/')
   } catch (e) {

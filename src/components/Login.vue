@@ -28,8 +28,8 @@
 
       <template v-else>
         <h1>
-          You are not logged in.<br />
-          To continue, please:<br />
+          You are not logged in.<br/>
+          To continue, please:<br/>
           <RouterLink to="/login">Login</RouterLink>
         </h1>
       </template>
