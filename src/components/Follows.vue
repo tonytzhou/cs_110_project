@@ -3,15 +3,8 @@ import { ref, onMounted } from 'vue'
 import { useUserStore }  from '../stores/userStores'
 import { RouterLink }    from 'vue-router'
 
-const userStore   = useUserStore()
+const userStore = useUserStore()
 const suggestions = ref([])
-
-async function fetchRandomUsers() {
-  const fake = [
-    { email: 'alice@example.com' }
-  ]
-  return fake
-}
 
 onMounted(async () => {
   const all = await fetchRandomUsers()

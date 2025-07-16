@@ -1,3 +1,23 @@
+<script setup>
+import { computed, watch } from 'vue'
+import { useRoute }     from 'vue-router'
+import { useUserStore } from '../stores/userStores'
+
+const route     = useRoute()
+const userStore = useUserStore()
+
+const viewingEmail = computed(() =>
+  route.params.email || userStore.currentUser
+)
+watch(
+  viewingEmail,
+  email => {
+    if (email) userStore.setViewingUser(email)
+  },
+  { immediate: true }
+)
+</script>
+
 <template>
   <div class="left_page">
     <div class="login_box">
@@ -10,15 +30,15 @@
 
         <div class="user_stats">
           <div class="stat">
-            <div class="stat_number">{{ userStore.postCount }}</div>
+            <div class="stat_number">{{ userStore.viewingPostCount }}</div>
             <div class="stat_label">Posts</div>
           </div>
           <div class="stat">
-            <div class="stat_number">{{ userStore.followingCount }}</div>
+            <div class="stat_number">{{ userStore.viewingFollowingCount }}</div>
             <div class="stat_label">Following</div>
           </div>
           <div class="stat">
-            <div class="stat_number">{{ userStore.followersCount }}</div>
+            <div class="stat_number">{{ userStore.viewingFollowersCount }}</div>
             <div class="stat_label">Followers</div>
           </div>
         </div>
@@ -34,25 +54,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed, watch } from 'vue'
-import { useRoute }     from 'vue-router'
-import { useUserStore } from '../stores/userStores'
-
-const route = useRoute()
-const userStore = useUserStore()
-
-const viewingEmail = computed(() =>
-  route.params.email || userStore.currentUser
-)
-
-watch(
-  viewingEmail,
-  email => email && userStore.setViewingUser(email),
-  { immediate: true }
-)
-</script>
 
 <style scoped>
 .left_page {

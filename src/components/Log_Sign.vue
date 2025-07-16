@@ -9,11 +9,11 @@ import { config } from '../firebaseResources'
 const app  = initializeApp(config)
 const auth = getAuth(app)
 
-const isLogin   = ref(true)
-const email     = ref('')
+const isLogin = ref(true)
+const email = ref('')
 const password  = ref('')
-const errMsg    = ref('')
-const router    = useRouter()
+const errMsg = ref('')
+const router = useRouter()
 const userStore = useUserStore()
 
 const register = async () => {
