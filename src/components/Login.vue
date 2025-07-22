@@ -74,7 +74,8 @@ h1 {
   display: inline-block;
   margin: 0 0.3rem;
   font-weight: bold;
-  color: var(--color-primary);
+  color: var(green);
+  
 }
 
 .user_stats {

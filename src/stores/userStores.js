@@ -14,9 +14,9 @@ import { getApp } from 'firebase/app'
 const app = getApp()
 const db = getFirestore(app)
 
-const postsCollection   = collection(db, 'posts')
+const postsCollection = collection(db, 'posts')
 const followsCollection = collection(db, 'follows')
-const usersCollection   = collection(db, 'users')
+const usersCollection = collection(db, 'users')
 
 export const useUserStore = defineStore('user', {
   state: () => ({

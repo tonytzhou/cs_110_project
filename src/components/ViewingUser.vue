@@ -81,6 +81,7 @@ async function toggleFollow() {
 .left_page {
   text-align: left;
 }
+
 .login_box {
   display: flex;
   flex-direction: column;
@@ -94,42 +95,50 @@ async function toggleFollow() {
   border-radius: 10px;
   background-color: var(--color-background);
 }
+
 h1 {
   font-weight: 500;
   font-size: 1.3rem;
   margin: 0.5rem 0;
 }
+
 .username {
   display: inline-block;
   margin: 0 0.3rem;
   font-weight: bold;
-  color: var(--color-primary);
+  color: var(green);
 }
+
 .user_stats {
   display: flex;
   justify-content: space-between;
   width: 100%;
   margin-top: 0.5rem;
 }
+
 .stat {
   flex: 1;
   text-align: center;
 }
+
 .stat_number {
   font-weight: bold;
   font-size: 1.4rem;
   color: var(--color-text);
 }
+
 .stat_label {
   font-size: 0.9rem;
   color: gray;
 }
+
 .follow_box {
   margin-top: 1rem;
   width: 300px;
   display: flex;
   justify-content: center;
 }
+
 .btn-follow {
   padding: 0.5rem 1rem;
   border: none;
