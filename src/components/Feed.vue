@@ -1,9 +1,17 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from '../stores/userStores'
-import { RouterLink } from 'vue-router'
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore'
 import { getApp } from 'firebase/app'
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
+  serverTimestamp
+} from 'firebase/firestore'
 
 const app = getApp()
 const db = getFirestore(app)
@@ -12,13 +20,45 @@ const postsCollection = collection(db, 'posts')
 const userStore = useUserStore()
 const newPost = ref('')
 const posts = ref([])
+const followingList = ref([])
 
-onMounted(() => {
-  const postsQuery = query(postsCollection, orderBy('timestamp', 'desc'))
-  onSnapshot(postsQuery, snapshot => {
-    posts.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+async function subscribeFeed() {
+  if (userStore.viewingUser) {
+    const q = query(
+      postsCollection,
+      where('user', '==', userStore.viewingUser),
+      orderBy('timestamp', 'desc')
+    )
+    onSnapshot(q, snap =>
+      (posts.value = snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    )
+    return
+  }
+
+  followingList.value = await userStore.fetchMyFollowingList()
+
+  let q
+  if (followingList.value.length > 0 && followingList.value.length <= 10) {
+    q = query(
+      postsCollection,
+      where('user', 'in', followingList.value),
+      orderBy('timestamp', 'desc')
+    )
+  } else {
+    q = query(postsCollection, orderBy('timestamp', 'desc'))
+  }
+
+  onSnapshot(q, snap => {
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    posts.value =
+      followingList.value.length > 0 && followingList.value.length <= 10
+        ? all
+        : all.filter(p => followingList.value.includes(p.user))
   })
-})
+}
+
+onMounted(subscribeFeed)
+watch(() => userStore.viewingUser, subscribeFeed)
 
 const submitPost = async () => {
   if (!newPost.value.trim() || !userStore.isLoggedIn) return
@@ -30,10 +70,10 @@ const submitPost = async () => {
       time: new Date().toLocaleTimeString(),
       timestamp: serverTimestamp()
     })
-    userStore.postCount += 1
+    userStore.postCount++
     newPost.value = ''
-  } catch (error) {
-    console.error('Error adding post: ', error)
+  } catch (e) {
+    console.error('Error adding post:', e)
   }
 }
 </script>
@@ -41,15 +81,22 @@ const submitPost = async () => {
 <template>
   <div class="center_page">
     <div class="wrapper">
-      <div v-if="userStore.isLoggedIn" class="new_post_box">
+      <div v-if="userStore.isLoggedIn && !userStore.viewingUser" class="new_post_box">
         <textarea v-model="newPost" placeholder="Post something!"></textarea>
         <button @click="submitPost">Post</button>
       </div>
-      <div v-else class="login_prompt">
+
+      <div v-else-if="!userStore.isLoggedIn" class="login_prompt">
         <p>Please <RouterLink to="/login">log in</RouterLink> to post.</p>
       </div>
+      <div
+        v-if="userStore.viewingUser && posts.length === 0"
+        class="no_posts"
+      >
+        This user has no posts.
+      </div>
 
-      <div v-for="(post, index) in posts" :key="post.id" class="user_post_box">
+      <div v-for="post in posts" :key="post.id" class="user_post_box">
         <RouterLink class="post_user" :to="`/UserProfile/${post.user}`">
           {{ post.user }}
         </RouterLink>
@@ -58,7 +105,6 @@ const submitPost = async () => {
           Posted on {{ post.date }}, {{ post.time }}
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -118,6 +164,17 @@ const submitPost = async () => {
   font-size: 1.1rem; 
 }
 
+.no_posts {
+  width: 800px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--color-muted);
+  border: 2px dashed var(--color-border);
+  border-radius: 10px;
+}
+
 .user_post_box { 
   position: relative; 
   border: 3px solid var(--color-border); 
@@ -149,5 +206,4 @@ const submitPost = async () => {
   font-size: 0.9rem; 
   color: var(--color-muted); 
 }
-
 </style>

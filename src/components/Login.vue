@@ -1,3 +1,10 @@
+<script setup>
+import { useUserStore } from '../stores/userStores'
+import { RouterLink }  from 'vue-router'
+
+const userStore = useUserStore()
+</script>
+
 <template>
   <div class="left_page">
     <div class="login_box">
@@ -37,13 +44,6 @@
   </div>
 </template>
 
-<script setup>
-import { useUserStore } from '../stores/userStores'
-import { RouterLink }  from 'vue-router'
-
-const userStore = useUserStore()
-</script>
-
 <style scoped>
 .left_page {
   text-align: left;
@@ -74,7 +74,8 @@ h1 {
   display: inline-block;
   margin: 0 0.3rem;
   font-weight: bold;
-  color: var(--color-primary);
+  color: var(green);
+  
 }
 
 .user_stats {
