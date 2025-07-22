@@ -1,3 +1,43 @@
+<template>
+  <div class="center_page">
+    <div class="wrapper">
+
+      <div v-if="userStore.isLoggedIn && !userStore.viewingUser" class="new_post_box">
+        <textarea v-model="newPost" placeholder="Post something!"></textarea>
+        <button @click="submitPost">Post</button>
+      </div>
+
+      <div v-else-if="!userStore.isLoggedIn" class="login_prompt">
+        <p>Please <RouterLink to="/login">log in</RouterLink> to post.</p>
+      </div>
+
+      <div v-if="userStore.viewingUser && posts.length === 0" class="no_posts">
+        This user has no posts.
+      </div>
+
+      <div v-for="post in posts" :key="post.id" class="user_post_box">
+        <RouterLink class="post_user" :to="`/UserProfile/${post.user}`">
+          {{ post.user }}
+        </RouterLink>
+        <div class="post_content">{{ post.content }}</div>
+        <div class="post_info">
+          Posted on {{ post.date }}, {{ post.time }}
+        </div>
+
+        <div class="favorite_controls">
+          <button class="favorite_btn" @click="toggleFavorite(post)">
+            <span v-if="favoritesMap[post.id]?.favorited">❇️</span>
+            <span v-else>🟩</span>
+          </button>
+          <span class="favorites_count">
+            {{ favoritesMap[post.id]?.count || 0 }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from '../stores/userStores'
@@ -6,6 +46,8 @@ import {
   getFirestore,
   collection,
   addDoc,
+  deleteDoc,
+  doc,
   onSnapshot,
   query,
   orderBy,
@@ -15,12 +57,15 @@ import {
 
 const app = getApp()
 const db = getFirestore(app)
+
 const postsCollection = collection(db, 'posts')
+const favoritesCollection = collection(db, 'favorites')
 
 const userStore = useUserStore()
 const newPost = ref('')
 const posts = ref([])
 const followingList = ref([])
+const favoritesMap = ref({})
 
 async function subscribeFeed() {
   if (userStore.viewingUser) {
@@ -57,8 +102,33 @@ async function subscribeFeed() {
   })
 }
 
-onMounted(subscribeFeed)
-watch(() => userStore.viewingUser, subscribeFeed)
+function subscribeFavorites() {
+  const favQuery = query(favoritesCollection)
+  onSnapshot(favQuery, snap => {
+    const map = {}
+    snap.docs.forEach(d => {
+      const { postId, user } = d.data()
+      if (!map[postId]) {
+        map[postId] = { count: 0, favorited: false, docIdMap: {} }
+      }
+      map[postId].count++
+      map[postId].docIdMap[user] = d.id
+    })
+    Object.values(map).forEach(entry => {
+      entry.favorited = !!entry.docIdMap[userStore.currentUser]
+    })
+    favoritesMap.value = map
+  })
+}
+
+onMounted(() => {
+  subscribeFeed()
+  subscribeFavorites()
+})
+
+watch(() => userStore.viewingUser, () => {
+  subscribeFeed()
+})
 
 const submitPost = async () => {
   if (!newPost.value.trim() || !userStore.isLoggedIn) return
@@ -76,38 +146,22 @@ const submitPost = async () => {
     console.error('Error adding post:', e)
   }
 }
+
+const toggleFavorite = async post => {
+  if (!userStore.isLoggedIn) return
+  const entry = favoritesMap.value[post.id] || { docIdMap: {} }
+  if (entry.favorited) {
+    const docId = entry.docIdMap[userStore.currentUser]
+    await deleteDoc(doc(db, 'favorites', docId))
+  } else {
+    await addDoc(favoritesCollection, {
+      postId: post.id,
+      user: userStore.currentUser,
+      timestamp: serverTimestamp()
+    })
+  }
+}
 </script>
-
-<template>
-  <div class="center_page">
-    <div class="wrapper">
-      <div v-if="userStore.isLoggedIn && !userStore.viewingUser" class="new_post_box">
-        <textarea v-model="newPost" placeholder="Post something!"></textarea>
-        <button @click="submitPost">Post</button>
-      </div>
-
-      <div v-else-if="!userStore.isLoggedIn" class="login_prompt">
-        <p>Please <RouterLink to="/login">log in</RouterLink> to post.</p>
-      </div>
-      <div
-        v-if="userStore.viewingUser && posts.length === 0"
-        class="no_posts"
-      >
-        This user has no posts.
-      </div>
-
-      <div v-for="post in posts" :key="post.id" class="user_post_box">
-        <RouterLink class="post_user" :to="`/UserProfile/${post.user}`">
-          {{ post.user }}
-        </RouterLink>
-        <div class="post_content">{{ post.content }}</div>
-        <div class="post_info">
-          Posted on {{ post.date }}, {{ post.time }}
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .center_page { 
@@ -205,5 +259,29 @@ const submitPost = async () => {
   margin-top: 8px; 
   font-size: 0.9rem; 
   color: var(--color-muted); 
+}
+
+.favorite_controls {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.favorite_btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.favorite_btn:focus {
+  outline: none;
+}
+
+.favorites_count {
+  margin-left: 8px;
+  font-size: 1rem;
+  color: var(--color-text);
 }
 </style>
