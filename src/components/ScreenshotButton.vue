@@ -1,19 +1,6 @@
-<script setup>
-const { 
-  onDownload,
-  onToggleComments,
-  onToggleFavCount
-} = defineProps({
-  onDownload: Function,
-  onToggleComments: Function,
-  onToggleFavCount: Function,
-  onToggleTimestamp: Function
-})
-</script>
-
 <template>
   <div class="screenshot_box">
-    <button class="screenshot_btn" @click="onDownload">
+    <button class="screenshot_btn" @click="downloadScreenshot">
       📸 Screenshot Feed
     </button>
     <button class="screenshot_btn" @click="onToggleComments">
@@ -27,6 +14,47 @@ const {
     </button>
   </div>
 </template>
+
+<script setup>
+import { defineProps } from 'vue'
+import html2canvas from 'html2canvas'
+
+const props = defineProps({
+  feedWrapper: { type: Object, required: true }, 
+  onToggleComments: Function,
+  onToggleFavCount: Function,
+  onToggleTimestamp: Function
+})
+
+async function downloadScreenshot() {
+  const el = props.feedWrapper.value ?? props.feedWrapper
+  if (!el) {
+    console.warn('ScreenshotButton: feedWrapper element is missing')
+    return
+  }
+
+  try {
+    const canvas = await html2canvas(el, {
+      logging: false,
+      useCORS: true,
+      backgroundColor: null
+    })
+
+    canvas.toBlob(blob => {
+      if (!blob) throw new Error('Failed to convert canvas to blob')
+      const link = document.createElement('a')
+      link.download = 'feed.png'
+      link.href = URL.createObjectURL(blob)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+    })
+  } catch (err) {
+    console.error('Screenshot failed:', err)
+  }
+}
+</script>
 
 <style scoped>
 .screenshot_box {

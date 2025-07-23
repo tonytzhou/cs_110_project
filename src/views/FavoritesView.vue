@@ -17,10 +17,6 @@ onMounted(() => {
   <main class="layout">
     <Login />
     <Feed ref="feedComp" />
-    <ScreenshotButton
-        v-if="userStore.isLoggedIn"
-        :onDownload="() => feedComp.downloadScreenshot()"
-      />
   </main>
 </template>
 
