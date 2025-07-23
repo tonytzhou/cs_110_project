@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Feed from '../components/Feed.vue'
-import Login from '../components/Login.vue'
-import ScreenshotButton from '../components/ScreenshotButton.vue'
+import ViewingUser from '@/components/ViewingUser.vue'
+import Follows from '../components/Follows.vue'
 import { useUserStore } from '../stores/userStores'
 
 const userStore = useUserStore()
@@ -15,12 +15,9 @@ onMounted(() => {
 
 <template>
   <main class="layout">
-    <Login />
-    <Feed ref="feedComp" />
-    <ScreenshotButton
-        v-if="userStore.isLoggedIn"
-        :onDownload="() => feedComp.downloadScreenshot()"
-      />
+    <ViewingUser />
+    <Feed />
+    <Follows />
   </main>
 </template>
 

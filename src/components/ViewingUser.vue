@@ -1,6 +1,6 @@
 <script setup>
 import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, RouterLink } from 'vue-router'
 import { useUserStore } from '../stores/userStores'
 
 const route = useRoute()
@@ -11,19 +11,18 @@ const viewingEmail = computed(() =>
 )
 
 const isFollowing = computed(() => userStore.isFollowingViewingUser)
+const isViewingFavorites = computed(() => route.name === 'userFavorites')
 
 watch(
   viewingEmail,
   email => {
-    if (email) {
-      userStore.setViewingUser(email)
-    }
+    if (email) userStore.setViewingUser(email)
   },
   { immediate: true }
 )
 
 async function toggleFollow() {
-  if (userStore.isFollowingViewingUser) {
+  if (isFollowing.value) {
     await userStore.unfollowUser()
   } else {
     await userStore.followUser()
@@ -36,9 +35,16 @@ async function toggleFollow() {
     <div class="login_box">
       <template v-if="userStore.isLoggedIn">
         <h1>
-          This is
-          <span class="username">{{ userStore.viewingUser }}</span>
-          ’s profile!
+          <template v-if="isFavoritesView">
+            This is
+            <span class="username">{{ userStore.viewingUser }}</span>
+            ’s favorite posts!
+          </template>
+          <template v-else>
+            This is
+            <span class="username">{{ userStore.viewingUser }}</span>
+            ’s profile!
+          </template>
         </h1>
 
         <div class="user_stats">
@@ -56,11 +62,10 @@ async function toggleFollow() {
           </div>
         </div>
       </template>
-
       <template v-else>
         <h1>
-          You are not logged in.<br />
-          To continue, please:<br />
+          You are not logged in.<br/>
+          To continue, please:<br/>
           <RouterLink to="/login">Login</RouterLink>
         </h1>
       </template>
@@ -73,6 +78,18 @@ async function toggleFollow() {
       <button class="btn-follow" @click="toggleFollow">
         {{ isFollowing ? 'Unfollow' : 'Follow' }}
       </button>
+    </div>
+
+    <div
+      v-if="userStore.isLoggedIn && viewingEmail !== userStore.currentUser"
+      class="favorites_box"
+    >
+      <RouterLink
+        :to="`/Favorites/${userStore.viewingUser}`"
+        class="btn-follow"
+      >
+        View Favorite Posts
+      </RouterLink>
     </div>
   </div>
 </template>
@@ -124,7 +141,6 @@ h1 {
 .stat_number {
   font-weight: bold;
   font-size: 1.4rem;
-  color: var(--color-text);
 }
 
 .stat_label {
@@ -139,13 +155,22 @@ h1 {
   justify-content: center;
 }
 
+.favorites_box {
+  margin-top: 0.5rem;
+  width: 300px;
+  display: flex;
+  justify-content: center;
+}
+
 .btn-follow {
   padding: 0.5rem 1rem;
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background-color: var(--color-border);
+  background-color: var(--color-background);
   color: var(--color-text);
   font-size: 1rem;
   cursor: pointer;
+  text-decoration: none;
+  text-align: center;
 }
 </style>
