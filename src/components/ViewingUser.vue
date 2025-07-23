@@ -1,10 +1,11 @@
 <script setup>
 import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStores'
 
-const route = useRoute()
-const userStore = useUserStore()
+const route      = useRoute()
+const router     = useRouter()
+const userStore  = useUserStore()
 
 const viewingEmail = computed(() =>
   route.params.email || userStore.currentUser
@@ -12,21 +13,35 @@ const viewingEmail = computed(() =>
 
 const isFollowing = computed(() => userStore.isFollowingViewingUser)
 
+const isViewingFavorites = computed(() =>
+  route.name === 'UserFavorites'
+)
+
 watch(
   viewingEmail,
-  email => {
-    if (email) {
-      userStore.setViewingUser(email)
-    }
-  },
+  email => { if (email) userStore.setViewingUser(email) },
   { immediate: true }
 )
 
 async function toggleFollow() {
-  if (userStore.isFollowingViewingUser) {
+  if (isFollowing.value) {
     await userStore.unfollowUser()
   } else {
     await userStore.followUser()
+  }
+}
+
+function toggleFavorites() {
+  if (isViewingFavorites.value) {
+    router.push({
+      name: 'UserProfile',
+      params: { email: viewingEmail.value }
+    })
+  } else {
+    router.push({
+      name: 'UserFavorites',
+      params: { email: viewingEmail.value }
+    })
   }
 }
 </script>
@@ -36,9 +51,14 @@ async function toggleFollow() {
     <div class="login_box">
       <template v-if="userStore.isLoggedIn">
         <h1>
-          This is
-          <span class="username">{{ userStore.viewingUser }}</span>
-          ’s profile!
+          <template v-if="isViewingFavorites">
+            These are their favorite posts!
+          </template>
+          <template v-else>
+            This is
+            <span class="username">{{ userStore.viewingUser }}</span>
+            ’s profile!
+          </template>
         </h1>
 
         <div class="user_stats">
@@ -56,12 +76,11 @@ async function toggleFollow() {
           </div>
         </div>
       </template>
-
       <template v-else>
         <h1>
-          You are not logged in.<br />
-          To continue, please:<br />
-          <RouterLink to="/login">Login</RouterLink>
+          You are not logged in.<br/>
+          To continue, please:<br/>
+          <router-link to="/login">Login</router-link>
         </h1>
       </template>
     </div>
@@ -72,6 +91,15 @@ async function toggleFollow() {
     >
       <button class="btn-follow" @click="toggleFollow">
         {{ isFollowing ? 'Unfollow' : 'Follow' }}
+      </button>
+    </div>
+
+    <div
+      v-if="userStore.isLoggedIn && viewingEmail !== userStore.currentUser"
+      class="favorites_box"
+    >
+      <button class="btn-follow" @click="toggleFavorites">
+        {{ isViewingFavorites ? 'Back to their Feed' : 'View Favorite Posts' }}
       </button>
     </div>
   </div>
@@ -87,26 +115,25 @@ async function toggleFollow() {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  text-align: center;
   width: 300px;
   height: 200px;
   padding: 1rem;
   border: 3px solid var(--color-border);
   border-radius: 10px;
   background-color: var(--color-background);
+  text-align: center;
 }
 
 h1 {
-  font-weight: 500;
   font-size: 1.3rem;
+  font-weight: 500;
   margin: 0.5rem 0;
 }
 
 .username {
-  display: inline-block;
-  margin: 0 0.3rem;
   font-weight: bold;
-  color: var(green);
+  margin: 0 0.3rem;
+  color: var(--color-text);
 }
 
 .user_stats {
@@ -122,9 +149,8 @@ h1 {
 }
 
 .stat_number {
-  font-weight: bold;
   font-size: 1.4rem;
-  color: var(--color-text);
+  font-weight: bold;
 }
 
 .stat_label {
@@ -132,20 +158,29 @@ h1 {
   color: gray;
 }
 
-.follow_box {
-  margin-top: 1rem;
+.follow_box,
+.favorites_box {
   width: 300px;
   display: flex;
   justify-content: center;
 }
 
+.follow_box {
+  margin-top: 1rem;
+}
+
+.favorites_box {
+  margin-top: 0.5rem;
+}
+
 .btn-follow {
   padding: 0.5rem 1rem;
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background-color: var(--color-border);
+  background-color: var(--color-background);
   color: var(--color-text);
   font-size: 1rem;
   cursor: pointer;
+  text-align: center;
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useUserStore }  from '../stores/userStores'
-import { RouterLink }    from 'vue-router'
+import { useUserStore } from '../stores/userStores'
+import { RouterLink } from 'vue-router'
 import { getFirestore, collection, getDocs } from 'firebase/firestore'
 import { getApp } from 'firebase/app'
 
@@ -13,20 +13,22 @@ const userStore = useUserStore()
 const suggestions = ref([])
 
 onMounted(async () => {
-  if (!userStore.isLoggedIn) return
-
-  const following = await userStore.fetchMyFollowingList()
-
   const snap  = await getDocs(usersC)
   const users = snap.docs.map(d => d.data())
 
-  suggestions.value = users
-    .filter(u =>
-      u.email !== userStore.currentUser &&
-      !following.includes(u.email)
-    )
-    .slice(0, 5)
-    .map(u => ({ email: u.email, isFollowing: false }))
+  if (userStore.isLoggedIn) {
+    const following = await userStore.fetchMyFollowingList()
+    suggestions.value = users
+      .filter(u =>
+        u.email !== userStore.currentUser &&
+        !following.includes(u.email)
+      )
+      .slice(0, 5)
+      .map(u => ({ email: u.email, isFollowing: false }))
+  } else {
+    // logged-out: show everyone
+    suggestions.value = users.map(u => ({ email: u.email }))
+  }
 })
 
 async function toggleFollow(u) {
@@ -54,7 +56,9 @@ async function toggleFollow(u) {
             <RouterLink
               :to="`/UserProfile/${u.email}`"
               class="suggestion_user"
-            >{{ u.email }}</RouterLink>
+            >
+              {{ u.email }}
+            </RouterLink>
             <button
               class="btn-follow"
               @click="toggleFollow(u)"
@@ -67,13 +71,30 @@ async function toggleFollow(u) {
           <h2>No one new to follow right now.</h2>
         </div>
       </template>
+
       <template v-else>
-        <h1>Please log in to see suggestions.</h1>
+        <h1>All users:</h1>
+        <div v-if="suggestions.length">
+          <div
+            v-for="u in suggestions"
+            :key="u.email"
+            class="suggestion"
+          >
+            <RouterLink
+              :to="`/UserProfile/${u.email}`"
+              class="suggestion_user"
+            >
+              {{ u.email }}
+            </RouterLink>
+          </div>
+        </div>
+        <div v-else>
+          <h2>No users found.</h2>
+        </div>
       </template>
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .right_page {
@@ -94,7 +115,6 @@ h1 {
   font-weight: 500;
   font-size: 1.6rem;
   margin-bottom: 0.8rem;
-  
 }
 
 h2 {

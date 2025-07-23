@@ -1,8 +1,14 @@
 <script setup>
 import { useUserStore } from '../stores/userStores'
-import { RouterLink }  from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
+import { computed } from 'vue'
 
 const userStore = useUserStore()
+const route = useRoute()
+
+const isFavoritesView = computed(() =>
+  route.name === 'Favorites' || route.path.includes('/favorites')
+)
 </script>
 
 <template>
@@ -11,12 +17,19 @@ const userStore = useUserStore()
       <template v-if="userStore.isLoggedIn">
         <h1>
           Hi,
-          <RouterLink :to="`/UserProfile/${userStore.currentUser}`" class="username">
+          <RouterLink
+            :to="`/UserProfile/${userStore.currentUser}`"
+            class="username"
+          >
             {{ userStore.currentUser }}
           </RouterLink>
-          <br>
-          Welcome to your profile!
+          <span v-if="isFavoritesView"> These are your favorite posts!</span>
+          <template v-else>
+            <br />
+            Welcome to your profile!
+          </template>
         </h1>
+
         <div class="user_stats">
           <div class="stat">
             <div class="stat_number">{{ userStore.postCount }}</div>
@@ -35,8 +48,8 @@ const userStore = useUserStore()
 
       <template v-else>
         <h1>
-          You are not logged in.<br/>
-          To continue, please:<br/>
+          You are not logged in.<br />
+          To continue, please:<br />
           <RouterLink to="/login">Login</RouterLink>
         </h1>
       </template>
@@ -75,7 +88,6 @@ h1 {
   margin: 0 0.3rem;
   font-weight: bold;
   color: var(green);
-  
 }
 
 .user_stats {
