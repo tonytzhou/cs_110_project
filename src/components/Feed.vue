@@ -89,6 +89,7 @@ const favoritesEmail = computed(
   () => route.params.email || userStore.currentUser
 )
 
+// Subscribes to comments for a post
 function subscribeComments(postId) {
   if (subscribedComments.has(postId)) return
   subscribedComments.add(postId)
@@ -105,6 +106,7 @@ function subscribeComments(postId) {
   )
 }
 
+// Subscribes to favorites
 function subscribeFavorites() {
   onSnapshot(query(collection(db, 'favorites')), (snap) => {
     const m = {}
@@ -114,13 +116,15 @@ function subscribeFavorites() {
       m[postId].count++
       m[postId].docIdMap[user] = d.id
     })
+    // Only set favorited for logged in user
     Object.values(m).forEach(e => {
-      e.favorited = !!e.docIdMap[userStore.currentUser]
+      e.favorited = userStore.isLoggedIn ? !!e.docIdMap[userStore.currentUser] : false
     })
     favoritesMap.value = m
   })
 }
 
+// ALWAYS loads the feed, even when not logged in
 function subscribeFeed() {
   if (route.name === 'UserFavorites') {
     const email = favoritesEmail.value
@@ -166,7 +170,10 @@ function subscribeFeed() {
       query(collection(db, 'posts'), orderBy('timestamp','desc')),
       (snap) => {
         const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        posts.value = all.filter(p => favoritesMap.value[p.id]?.favorited)
+        // Only show favorited if logged in, otherwise show none
+        posts.value = userStore.isLoggedIn
+          ? all.filter(p => favoritesMap.value[p.id]?.favorited)
+          : []
         posts.value.forEach(p => subscribeComments(p.id))
       }
     )
@@ -185,6 +192,18 @@ function subscribeFeed() {
     return
   }
 
+  // For general feed, show ALL posts if not logged in
+  if (!userStore.isLoggedIn) {
+    onSnapshot(
+      query(collection(db, 'posts'), orderBy('timestamp','desc')),
+      (snap) => {
+        posts.value = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      }
+    )
+    return
+  }
+
+  // If logged in, show following or everything
   userStore.fetchMyFollowingList().then(list => {
     let q
     if (list.length > 0 && list.length <= 10) {
@@ -198,7 +217,7 @@ function subscribeFeed() {
     }
     onSnapshot(q, (snap) => {
       const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      posts.value = list.length > 0 && list.length <= 10
+      posts.value = (list.length > 0 && list.length <= 10)
         ? all
         : all.filter(p => list.includes(p.user))
     })
@@ -210,8 +229,8 @@ onMounted(() => {
   subscribeFeed()
 })
 
-watch(() => userStore.isLoggedIn, logged => {
-  if (logged) subscribeFeed()
+watch(() => userStore.isLoggedIn, () => {
+  subscribeFeed()
 })
 watch(() => route.name, () => subscribeFeed())
 
@@ -256,19 +275,23 @@ async function toggleFavorite(post) {
 <template>
   <div class="center_page">
     <div class="wrapper" ref="feedWrapper" :class="wrapperClass">
+      <!-- Only show post box if logged in and not in Favorites/UserFavorites and not viewing another user -->
       <div
-        v-if="route.name !== 'Favorites' && route.name !== 'UserFavorites' && userStore.isLoggedIn && !userStore.viewingUser" class="new_post_box">
+        v-if="route.name !== 'Favorites' && route.name !== 'UserFavorites' && userStore.isLoggedIn && !userStore.viewingUser"
+        class="new_post_box">
         <textarea v-model="newPost" placeholder="Post something!" />
         <button @click="submitPost">Post</button>
       </div>
 
       <div
-        v-else-if="route.name !== 'Favorites' && route.name !== 'UserFavorites' && !userStore.isLoggedIn" class="login_prompt">
+        v-else-if="route.name !== 'Favorites' && route.name !== 'UserFavorites' && !userStore.isLoggedIn"
+        class="login_prompt">
         <p>Please <RouterLink to="/login">log in</RouterLink> to post.</p>
       </div>
 
       <div
-        v-if="userStore.viewingUser && posts.length === 0 && route.name !== 'UserFavorites'" class="no_posts">
+        v-if="userStore.viewingUser && posts.length === 0 && route.name !== 'UserFavorites'"
+        class="no_posts">
         This user has no posts.
       </div>
 
@@ -306,7 +329,10 @@ async function toggleFavorite(post) {
           Posted on {{ post.date }}, {{ post.time }}
         </div>
 
-        <div v-if="userStore.isLoggedIn" class="favorite_controls">
+        <div
+          v-if="userStore.isLoggedIn"
+          class="favorite_controls"
+        >
           <button class="favorite_btn" @click="toggleFavorite(post)">
             <span
               v-if="showFavCount && favoritesMap[post.id]?.favorited"
